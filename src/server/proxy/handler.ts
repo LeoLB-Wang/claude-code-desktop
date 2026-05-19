@@ -9,7 +9,9 @@
  * Original work by Jason Young, MIT License
  */
 
+import { signClaudeCodeCCHInTransformedString } from '../../utils/claudeCodeCch.js'
 import { ProviderService } from '../services/providerService.js'
+import { ensureClaudeCodeAttribution } from './claudeCodeAttribution.js'
 import { anthropicToOpenaiChat } from './transform/anthropicToOpenaiChat.js'
 import { anthropicToOpenaiResponses } from './transform/anthropicToOpenaiResponses.js'
 import { openaiChatToAnthropic } from './transform/openaiChatToAnthropic.js'
@@ -79,6 +81,8 @@ export async function handleProxyRequest(req: Request, url: URL): Promise<Respon
     )
   }
 
+  body = ensureClaudeCodeAttribution(body)
+
   const isStream = body.stream === true
   const baseUrl = config.baseUrl.replace(/\/+$/, '')
 
@@ -122,7 +126,7 @@ async function handleOpenaiChat(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(transformed),
+    body: signClaudeCodeCCHInTransformedString(JSON.stringify(transformed)),
     signal: isStream ? AbortSignal.timeout(30_000) : AbortSignal.timeout(300_000),
   })
 
@@ -186,7 +190,7 @@ async function handleOpenaiResponses(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(transformed),
+    body: signClaudeCodeCCHInTransformedString(JSON.stringify(transformed)),
     signal: isStream ? AbortSignal.timeout(30_000) : AbortSignal.timeout(300_000),
   })
 

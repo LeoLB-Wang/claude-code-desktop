@@ -10,6 +10,7 @@ import {
   refreshAndGetAwsCredentials,
   refreshGcpCredentialsIfNeeded,
 } from 'src/utils/auth.js'
+import { signClaudeCodeCCHBody } from 'src/utils/claudeCodeCch.js'
 import { getUserAgent } from 'src/utils/http.js'
 import { getSmallFastModel } from 'src/utils/model/model.js'
 import {
@@ -422,6 +423,6 @@ function buildFetch(
     } catch {
       // never let logging crash the fetch
     }
-    return inner(input, { ...init, headers })
+    return inner(input, { ...init, headers, body: signClaudeCodeCCHBody(init?.body) })
   }
 }
