@@ -3591,22 +3591,21 @@ function AboutSettings() {
 
   const hasKnownProgress = typeof totalBytes === 'number' && totalBytes > 0
   const downloadedText = formatBytes(downloadedBytes)
-  const updateDescription =
-    updateStatus === 'checking'
-      ? t('update.checking')
-      : updateStatus === 'downloading'
-        ? hasKnownProgress
-          ? t('update.progress', { progress: String(progressPercent) })
-          : t('update.progressBytes', { downloaded: downloadedText })
-        : updateStatus === 'restarting'
-          ? t('update.restarting')
-          : updateStatus === 'available' && availableVersion
-            ? t('update.newVersion', { version: availableVersion })
-            : updateStatus === 'up-to-date'
-              ? t('update.upToDate', { version: version || t('update.currentVersionUnknown') })
-              : error
-                ? t('update.failed', { error })
-                : t('update.idle')
+  const updateDescription = (() => {
+    if (updateStatus === 'checking') return t('update.checking')
+    if (error) return t('update.failed', { error })
+    if (updateStatus === 'downloading') {
+      return hasKnownProgress
+        ? t('update.progress', { progress: String(progressPercent) })
+        : t('update.progressBytes', { downloaded: downloadedText })
+    }
+    if (updateStatus === 'downloaded') return t('update.downloaded')
+    if (updateStatus === 'installing') return t('update.installing')
+    if (updateStatus === 'restarting') return t('update.restarting')
+    if (updateStatus === 'available' && availableVersion) return t('update.newVersion', { version: availableVersion })
+    if (updateStatus === 'up-to-date') return t('update.upToDate', { version: version || t('update.currentVersionUnknown') })
+    return t('update.idle')
+  })()
 
   return (
     <div className="w-full min-w-0 max-w-lg mx-auto flex flex-col items-center py-6">
@@ -3812,10 +3811,16 @@ function AboutSettings() {
               <Button
                 size="sm"
                 onClick={() => void installUpdate()}
-                loading={updateStatus === 'downloading' || updateStatus === 'restarting'}
-                disabled={updateStatus === 'checking'}
+                loading={updateStatus === 'downloading' || updateStatus === 'installing' || updateStatus === 'restarting'}
+                disabled={updateStatus === 'checking' || updateStatus === 'downloading'}
               >
-                {updateStatus === 'restarting' ? t('update.restarting') : t('update.now')}
+                {updateStatus === 'downloaded'
+                  ? t('update.installAndRestart')
+                  : updateStatus === 'installing'
+                    ? t('update.installing')
+                    : updateStatus === 'restarting'
+                      ? t('update.restarting')
+                      : t('update.now')}
               </Button>
             </div>
           )}
