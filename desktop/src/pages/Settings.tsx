@@ -3830,7 +3830,7 @@ function AboutSettings() {
               onClick={() => openUrl(link.url)}
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
             >
-              <img src={link.icon} alt={link.name} className="w-4 h-4 opacity-60" />
+              <img src={publicAssetPath(link.icon)} alt={link.name} className="w-4 h-4 opacity-60" />
               <span className="text-sm text-[var(--color-text-primary)]">{link.label}</span>
               <span className="text-xs text-[var(--color-text-tertiary)] ml-auto">{link.name}</span>
             </button>
