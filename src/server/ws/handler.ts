@@ -547,6 +547,15 @@ async function handlePrewarmSession(ws: ServerWebSocket<WebSocketData>) {
   }
 
   const launchInfo = await sessionService.getSessionLaunchInfo(sessionId).catch(() => null)
+
+  // Re-check after async gap: a user_message may have arrived during the await
+  // and already started (or is starting) the CLI session. If so, skip prewarm
+  // entirely — the user turn owns this session now, and calling markPrewarmed()
+  // would arm an idle timer that later kills the active conversation.
+  if (conversationService.hasSession(sessionId) || sessionStartupPromises.has(sessionId)) {
+    return
+  }
+
   if (launchInfo?.repository) {
     console.log(`[WS] Skipping prewarm for pending repository launch session ${sessionId}`)
     return
@@ -555,7 +564,14 @@ async function handlePrewarmSession(ws: ServerWebSocket<WebSocketData>) {
   prewarmPendingSessions.add(sessionId)
   void ensureCliSessionStarted(ws, sessionId, 'prewarm_session')
     .then(() => {
-      if (!prewarmPendingSessions.delete(sessionId)) return
+      const stillPending = prewarmPendingSessions.delete(sessionId)
+      if (!stillPending) return
+      // Safety: if a user message arrived and activated a turn while we were
+      // waiting for startup, do NOT arm the prewarm idle timer — the session
+      // is now owned by the user conversation, not prewarm.
+      if (isSessionTurnActive(sessionId)) {
+        return
+      }
       bindPrewarmMetadataCapture(sessionId)
       markPrewarmed(sessionId)
     })
@@ -1230,6 +1246,15 @@ function markPrewarmed(sessionId: string) {
   const timer = setTimeout(() => {
     prewarmIdleTimers.delete(sessionId)
     if (!prewarmedSessions.has(sessionId)) return
+    const turnActive = isSessionTurnActive(sessionId)
+    const hasClients = hasActiveClients(sessionId)
+    // Safety guard: never kill a session that has an active user turn or
+    // connected clients. The prewarm idle timer is only meant to reclaim
+    // truly idle prewarmed sessions — not to interrupt an active conversation.
+    if (turnActive || hasClients) {
+      prewarmedSessions.delete(sessionId)
+      return
+    }
     console.log(`[WS] Prewarmed session ${sessionId} idle for ${timeoutMs}ms, stopping CLI subprocess`)
     conversationService.stopSession(sessionId)
     prewarmedSessions.delete(sessionId)
