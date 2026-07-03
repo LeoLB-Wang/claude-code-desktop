@@ -36,9 +36,6 @@ import { useAgentStore } from '../stores/agentStore'
 import { useSessionStore } from '../stores/sessionStore'
 import type { AgentDefinition, AgentSource } from '../api/agents'
 import { MarkdownRenderer } from '../components/markdown/MarkdownRenderer'
-import { useSkillStore } from '../stores/skillStore'
-import { SkillList } from '../components/skills/SkillList'
-import { SkillDetail } from '../components/skills/SkillDetail'
 import { usePluginStore } from '../stores/pluginStore'
 import { PluginList } from '../components/plugins/PluginList'
 import { PluginDetail } from '../components/plugins/PluginDetail'
@@ -78,6 +75,7 @@ import {
   stripProviderSettingsJsonEnv,
 } from '../lib/providerSettingsJson'
 import { copyTextToClipboard } from '../components/chat/clipboard'
+import { SKILL_CENTER_TAB_ID, useTabStore } from '../stores/tabStore'
 
 const NETWORK_TIMEOUT_MIN_SECONDS = 30
 const NETWORK_TIMEOUT_MAX_SECONDS = 1800
@@ -207,6 +205,11 @@ export function Settings() {
     useUIStore.getState().setPendingSettingsTab(null)
   }, [pendingSettingsTab, setActiveTab])
 
+  useEffect(() => {
+    if (activeTab !== 'skills') return
+    useTabStore.getState().openTab(SKILL_CENTER_TAB_ID, t('skillCenter.title'), 'skill-center')
+  }, [activeTab, t])
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]">
       <div className="flex-1 flex overflow-hidden">
@@ -220,7 +223,12 @@ export function Settings() {
             <TabButton icon="terminal" label={t('settings.tab.terminal')} active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} />
             <TabButton icon="dns" label={t('settings.tab.mcp')} active={activeTab === 'mcp'} onClick={() => setActiveTab('mcp')} />
             <TabButton icon="smart_toy" label={t('settings.tab.agents')} active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} />
-            <TabButton icon="auto_awesome" label={t('settings.tab.skills')} active={activeTab === 'skills'} onClick={() => setActiveTab('skills')} />
+            <TabButton
+              icon="auto_awesome"
+              label={t('settings.tab.skills')}
+              active={activeTab === 'skills'}
+              onClick={() => useTabStore.getState().openTab(SKILL_CENTER_TAB_ID, t('skillCenter.title'), 'skill-center')}
+            />
             <TabButton icon="history_edu" label={t('settings.tab.memory')} active={activeTab === 'memory'} onClick={() => setActiveTab('memory')} />
             <TabButton icon="extension" label={t('settings.tab.plugins')} active={activeTab === 'plugins'} onClick={() => setActiveTab('plugins')} />
             <TabButton icon="mouse" label={t('settings.tab.computerUse')} active={activeTab === 'computerUse'} onClick={() => setActiveTab('computerUse')} />
@@ -4321,26 +4329,24 @@ function DetailStat({
 // ─── Skill Settings ──────────────────────────────────────
 
 function SkillSettings() {
-  const selectedSkill = useSkillStore((s) => s.selectedSkill)
   const t = useTranslation()
 
-  if (selectedSkill) {
-    return (
-      <div className="w-full min-w-0">
-        <SkillDetail />
-      </div>
-    )
-  }
-
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0 max-w-2xl">
       <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
         {t('settings.skills.title')}
       </h2>
       <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
-        {t('settings.skills.description')}
+        {t('settings.skills.redirectDescription')}
       </p>
-      <SkillList />
+      <button
+        type="button"
+        onClick={() => useTabStore.getState().openTab(SKILL_CENTER_TAB_ID, t('skillCenter.title'), 'skill-center')}
+        className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--color-brand)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
+      >
+        <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+        {t('settings.skills.openSkillCenter')}
+      </button>
     </div>
   )
 }

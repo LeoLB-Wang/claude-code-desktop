@@ -715,6 +715,8 @@ export const zh: Record<TranslationKey, string> = {
   // Settings > Skills
   'settings.skills.title': '已安裝技能',
   'settings.skills.description': '技能擴充套件 Claude 的能力。在 ~/.claude/skills/ 中管理技能。',
+  'settings.skills.redirectDescription': '技能現在統一放在技能中心管理，市場和已安裝技能會放在同一個入口裡。',
+  'settings.skills.openSkillCenter': '開啟技能中心',
   'settings.skills.browserTitle': '瀏覽已安裝技能',
   'settings.skills.browserEyebrow': '技能瀏覽器',
   'settings.skills.browserDescription': '檢視內建、專案和使用者技能，比較它們的來源與規模，並開啟技能目錄閱讀文件和原始碼檔案。',
@@ -2055,6 +2057,12 @@ export const zh: Record<TranslationKey, string> = {
   'skillCenter.marketplace.blockedAction': '不可安裝',
   'skillCenter.marketplace.openSource': '開啟來源',
   'skillCenter.marketplace.openUpstream': '開啟上游',
+  'skillCenter.marketplace.confirmTitle': '確認安裝技能',
+  'skillCenter.marketplace.confirmBody': '安裝前請確認來源和目標目錄。技能會寫入本機使用者技能目錄。',
+  'skillCenter.marketplace.confirmSkill': '技能',
+  'skillCenter.marketplace.confirmTarget': '目標',
+  'skillCenter.marketplace.confirmInstall': '安裝技能',
+  'skillCenter.marketplace.noRiskLabels': '未回報風險訊號',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': '關閉',

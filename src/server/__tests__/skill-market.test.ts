@@ -700,6 +700,28 @@ describe('skill market service source selection', () => {
     })
   })
 
+  it('blocks uninstalled detail installs when only list-level ClawHub metadata is available', async () => {
+    const service = createSkillMarketService({
+      fetchImpl: async () => Response.json(CLAWHUB_TOP_SKILLS_RESPONSE),
+      installedSkillNames: new Set(),
+    })
+
+    const detail = await service.getDetail({ source: 'clawhub', slug: 'skill-vetter' })
+
+    expect(detail).toMatchObject({
+      source: 'clawhub',
+      slug: 'skill-vetter',
+      trustState: 'clean',
+      installed: false,
+      files: [],
+      riskLabels: [],
+      installEligibility: {
+        status: 'blocked',
+        reason: expect.stringContaining('Full package safety scan'),
+      },
+    })
+  })
+
   it('blocks detail installs when list trust metadata is not installable', async () => {
     const service = createSkillMarketService({
       fetchImpl: async () => Response.json(SKILLHUB_TOP_SKILLS_RESPONSE),

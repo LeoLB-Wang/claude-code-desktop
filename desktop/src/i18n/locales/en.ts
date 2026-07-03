@@ -713,6 +713,8 @@ export const en = {
   // Settings > Skills
   'settings.skills.title': 'Installed Skills',
   'settings.skills.description': 'Skills extend Claude with specialized capabilities. Manage skills in ~/.claude/skills/',
+  'settings.skills.redirectDescription': 'Skills now live in the unified Skill Center, where marketplace and installed skills are managed together.',
+  'settings.skills.openSkillCenter': 'Open Skill Center',
   'settings.skills.browserTitle': 'Browse installed skills',
   'settings.skills.browserEyebrow': 'Skill Browser',
   'settings.skills.browserDescription': 'Inspect bundled, project, and user skills, compare their scope, and open each skill folder to read its docs and source files.',
@@ -2053,6 +2055,12 @@ export const en = {
   'skillCenter.marketplace.blockedAction': 'Blocked',
   'skillCenter.marketplace.openSource': 'Open source',
   'skillCenter.marketplace.openUpstream': 'Open upstream',
+  'skillCenter.marketplace.confirmTitle': 'Confirm skill install',
+  'skillCenter.marketplace.confirmBody': 'Review the source and target before installing this skill to your local user skills directory.',
+  'skillCenter.marketplace.confirmSkill': 'Skill',
+  'skillCenter.marketplace.confirmTarget': 'Target',
+  'skillCenter.marketplace.confirmInstall': 'Install skill',
+  'skillCenter.marketplace.noRiskLabels': 'No risk signals reported',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': 'Close',

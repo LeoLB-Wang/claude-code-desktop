@@ -5,7 +5,6 @@ import type {
   SkillMarketItem,
   SkillMarketListResult,
   SkillMarketSource,
-  SkillMarketTrustState,
 } from './types.js'
 
 export type SkillMarketListSource = 'auto' | 'clawhub' | 'skillhub'
@@ -44,13 +43,6 @@ const DEFAULT_LIMIT = 24
 const MAX_LIMIT = 100
 const CATALOG_CACHE_TTL_MS = 5 * 60 * 1_000
 const FAILURE_CACHE_TTL_MS = 60 * 1_000
-const DETAIL_INSTALLABLE_TRUST_STATES = new Set<SkillMarketTrustState>([
-  'clean',
-  'benign',
-  'signed',
-  'official',
-])
-
 type CatalogCacheEntry = {
   expiresAt: number
   result: SkillMarketListResult
@@ -242,8 +234,13 @@ function installEligibilityFromListItem(item: SkillMarketItem): SkillMarketDetai
       installedSkillName: item.slug,
     }
   }
-  if (DETAIL_INSTALLABLE_TRUST_STATES.has(item.trustState)) {
-    return { status: 'installable' }
+  if (
+    item.trustState === 'clean' ||
+    item.trustState === 'benign' ||
+    item.trustState === 'signed' ||
+    item.trustState === 'official'
+  ) {
+    return { status: 'blocked', reason: 'Full package safety scan is required before install.' }
   }
   if (item.trustState === 'warning') {
     return { status: 'blocked', reason: 'Skill market trust metadata contains warnings.' }

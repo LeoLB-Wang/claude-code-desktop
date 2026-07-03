@@ -715,6 +715,8 @@ export const jp: Record<TranslationKey, string> = {
   // Settings > Skills
   'settings.skills.title': 'インストール済みスキル',
   'settings.skills.description': 'スキルは Claude に専門的な機能を追加します。スキルは ~/.claude/skills/ で管理します',
+  'settings.skills.redirectDescription': 'スキルは統合されたスキルセンターで管理されます。マーケットとインストール済みスキルを同じ場所で扱えます。',
+  'settings.skills.openSkillCenter': 'スキルセンターを開く',
   'settings.skills.browserTitle': 'インストール済みスキルを閲覧',
   'settings.skills.browserEyebrow': 'スキルブラウザ',
   'settings.skills.browserDescription': 'バンドル、プロジェクト、ユーザーのスキルを確認し、スコープを比較し、各スキルフォルダを開いてドキュメントやソースファイルを読みます。',
@@ -2055,6 +2057,12 @@ export const jp: Record<TranslationKey, string> = {
   'skillCenter.marketplace.blockedAction': 'インストール不可',
   'skillCenter.marketplace.openSource': 'ソースを開く',
   'skillCenter.marketplace.openUpstream': '上流を開く',
+  'skillCenter.marketplace.confirmTitle': 'スキルのインストールを確認',
+  'skillCenter.marketplace.confirmBody': 'インストール前にソースと対象ディレクトリを確認してください。スキルはローカルのユーザースキルディレクトリに書き込まれます。',
+  'skillCenter.marketplace.confirmSkill': 'スキル',
+  'skillCenter.marketplace.confirmTarget': '対象',
+  'skillCenter.marketplace.confirmInstall': 'スキルをインストール',
+  'skillCenter.marketplace.noRiskLabels': 'リスクシグナルなし',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': '閉じる',

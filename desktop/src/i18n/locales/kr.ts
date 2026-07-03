@@ -715,6 +715,8 @@ export const kr: Record<TranslationKey, string> = {
   // Settings > Skills
   'settings.skills.title': '설치된 스킬',
   'settings.skills.description': '스킬은 Claude에 전문 기능을 추가합니다. 스킬은 ~/.claude/skills/에서 관리합니다',
+  'settings.skills.redirectDescription': '스킬은 이제 통합 스킬 센터에서 관리합니다. 마켓과 설치된 스킬을 한 곳에서 볼 수 있습니다.',
+  'settings.skills.openSkillCenter': '스킬 센터 열기',
   'settings.skills.browserTitle': '설치된 스킬 살펴보기',
   'settings.skills.browserEyebrow': '스킬 브라우저',
   'settings.skills.browserDescription': '번들, 프로젝트, 사용자 스킬을 확인하고 범위를 비교하며, 각 스킬 폴더를 열어 문서와 소스 파일을 읽습니다.',
@@ -2055,6 +2057,12 @@ export const kr: Record<TranslationKey, string> = {
   'skillCenter.marketplace.blockedAction': '설치 불가',
   'skillCenter.marketplace.openSource': '소스 열기',
   'skillCenter.marketplace.openUpstream': '업스트림 열기',
+  'skillCenter.marketplace.confirmTitle': '스킬 설치 확인',
+  'skillCenter.marketplace.confirmBody': '설치 전에 소스와 대상 디렉터리를 확인하세요. 스킬은 로컬 사용자 스킬 디렉터리에 기록됩니다.',
+  'skillCenter.marketplace.confirmSkill': '스킬',
+  'skillCenter.marketplace.confirmTarget': '대상',
+  'skillCenter.marketplace.confirmInstall': '스킬 설치',
+  'skillCenter.marketplace.noRiskLabels': '보고된 위험 신호 없음',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': '닫기',

@@ -12,8 +12,11 @@ import {
   X,
 } from 'lucide-react'
 import { SkillList } from '../components/skills/SkillList'
+import { SkillDetail } from '../components/skills/SkillDetail'
+import { ConfirmDialog } from '../components/shared/ConfirmDialog'
 import { useTranslation } from '../i18n'
 import { useSkillMarketStore } from '../stores/skillMarketStore'
+import { useSkillStore } from '../stores/skillStore'
 import type {
   SkillMarketDetail,
   SkillMarketInstallEligibility,
@@ -31,7 +34,11 @@ const TRUST_SAFE: SkillMarketTrustState[] = ['clean', 'benign', 'signed', 'offic
 
 export function SkillCenter() {
   const t = useTranslation()
-  const [activeTab, setActiveTab] = useState<SkillCenterTab>('marketplace')
+  const selectedInstalledSkill = useSkillStore((s) => s.selectedSkill)
+  const [activeTab, setActiveTab] = useState<SkillCenterTab>(() =>
+    selectedInstalledSkill ? 'mine' : 'marketplace'
+  )
+  const [pendingInstallDetail, setPendingInstallDetail] = useState<SkillMarketDetail | null>(null)
   const {
     items,
     selectedDetail,
@@ -52,8 +59,15 @@ export function SkillCenter() {
   } = useSkillMarketStore()
 
   useEffect(() => {
+    if (activeTab !== 'marketplace') return
     void fetchItems()
-  }, [fetchItems, source, sort])
+  }, [activeTab, fetchItems, source, sort])
+
+  useEffect(() => {
+    if (selectedInstalledSkill) {
+      setActiveTab('mine')
+    }
+  }, [selectedInstalledSkill])
 
   const installedCount = useMemo(
     () => items.filter((item) => item.installed).length,
@@ -215,17 +229,60 @@ export function SkillCenter() {
                 detail={selectedDetail}
                 loading={isDetailLoading}
                 installing={isInstalling}
-                onInstall={() => void installSelected()}
+                onInstall={() => selectedDetail && setPendingInstallDetail(selectedDetail)}
                 onClose={clearDetail}
               />
             </div>
+            <ConfirmDialog
+              open={!!pendingInstallDetail}
+              onClose={() => setPendingInstallDetail(null)}
+              title={t('skillCenter.marketplace.confirmTitle')}
+              body={pendingInstallDetail ? <InstallConfirmBody detail={pendingInstallDetail} /> : null}
+              confirmLabel={t('skillCenter.marketplace.confirmInstall')}
+              cancelLabel={t('common.cancel')}
+              confirmVariant="primary"
+              loading={isInstalling}
+              onConfirm={async () => {
+                await installSelected()
+                setPendingInstallDetail(null)
+              }}
+            />
           </section>
         ) : (
           <div role="tabpanel" data-testid="skill-mine-tab">
-            <SkillList />
+            {selectedInstalledSkill ? <SkillDetail /> : <SkillList />}
           </div>
         )}
       </main>
+    </div>
+  )
+}
+
+function InstallConfirmBody({ detail }: { detail: SkillMarketDetail }) {
+  const t = useTranslation()
+  const target = `~/.claude/skills/${detail.slug}`
+  const riskLabel = detail.riskLabels.length > 0
+    ? detail.riskLabels.map((label) => t(`skillCenter.marketplace.risk.${label}`)).join(', ')
+    : t('skillCenter.marketplace.noRiskLabels')
+
+  return (
+    <div className="space-y-3 text-sm text-[var(--color-text-secondary)]">
+      <p className="leading-6">{t('skillCenter.marketplace.confirmBody')}</p>
+      <dl className="grid gap-2 rounded-md bg-[var(--color-surface-container-low)] p-3 text-xs">
+        <ConfirmRow label={t('skillCenter.marketplace.confirmSkill')} value={detail.displayName} />
+        <ConfirmRow label={t('skillCenter.marketplace.sourceLabel')} value={t(`skillCenter.marketplace.source.${detail.source}`)} />
+        <ConfirmRow label={t('skillCenter.marketplace.confirmTarget')} value={target} />
+        <ConfirmRow label={t('skillCenter.marketplace.riskLabels')} value={riskLabel} />
+      </dl>
+    </div>
+  )
+}
+
+function ConfirmRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-2">
+      <dt className="text-[var(--color-text-tertiary)]">{label}</dt>
+      <dd className="break-all text-[var(--color-text-primary)]">{value}</dd>
     </div>
   )
 }

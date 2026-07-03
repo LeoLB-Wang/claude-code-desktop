@@ -9,7 +9,7 @@ import {
 } from '../../api/sessions'
 import { useTranslation, type TranslationKey } from '../../i18n'
 import { useUIStore } from '../../stores/uiStore'
-import { SETTINGS_TAB_ID, useTabStore } from '../../stores/tabStore'
+import { SETTINGS_TAB_ID, SKILL_CENTER_TAB_ID, useTabStore } from '../../stores/tabStore'
 import { useMcpStore } from '../../stores/mcpStore'
 import { useSkillStore } from '../../stores/skillStore'
 import type { McpServerRecord } from '../../types/mcp'
@@ -954,7 +954,6 @@ function McpPanel({ cwd, onClose }: { cwd?: string; onClose: () => void }) {
 
 function SkillsPanel({ cwd, onClose }: { cwd?: string; onClose: () => void }) {
   const t = useTranslation()
-  const setPendingSettingsTab = useUIStore((s) => s.setPendingSettingsTab)
   const fetchSkillDetail = useSkillStore((s) => s.fetchSkillDetail)
   const [skills, setSkills] = useState<SkillMeta[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -995,8 +994,7 @@ function SkillsPanel({ cwd, onClose }: { cwd?: string; onClose: () => void }) {
               key={`${skill.source}:${skill.name}`}
               onClick={async () => {
                 await fetchSkillDetail(skill.source, skill.name, cwd, 'skills')
-                setPendingSettingsTab('skills')
-                useTabStore.getState().openTab(SETTINGS_TAB_ID, 'Settings', 'settings')
+                useTabStore.getState().openTab(SKILL_CENTER_TAB_ID, t('skillCenter.title'), 'skill-center')
                 onClose()
               }}
               className="block w-full border-t border-[var(--color-border)] px-4 py-4 text-left first:border-t-0 hover:bg-[var(--color-surface-hover)]"

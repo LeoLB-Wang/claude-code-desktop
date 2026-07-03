@@ -27,6 +27,8 @@ type SkillMarketStore = {
   clearDetail: () => void
 }
 
+let detailRequestSeq = 0
+
 export const useSkillMarketStore = create<SkillMarketStore>((set, get) => ({
   items: [],
   selectedDetail: null,
@@ -38,13 +40,20 @@ export const useSkillMarketStore = create<SkillMarketStore>((set, get) => ({
   isInstalling: false,
   error: null,
 
-  setSource: (source) => set({ source }),
-  setSort: (sort) => set({ sort }),
+  setSource: (source) => {
+    detailRequestSeq += 1
+    set({ source, selectedDetail: null, isDetailLoading: false })
+  },
+  setSort: (sort) => {
+    detailRequestSeq += 1
+    set({ sort, selectedDetail: null, isDetailLoading: false })
+  },
   setQuery: (query) => set({ query }),
 
   fetchItems: async () => {
     const { source, sort, query } = get()
-    set({ isLoading: true, error: null })
+    detailRequestSeq += 1
+    set({ isLoading: true, isDetailLoading: false, selectedDetail: null, error: null })
     try {
       const result = await skillMarketApi.list({
         source,
@@ -61,11 +70,15 @@ export const useSkillMarketStore = create<SkillMarketStore>((set, get) => ({
   },
 
   fetchDetail: async (source, slug) => {
-    set({ isDetailLoading: true, error: null })
+    const requestId = detailRequestSeq + 1
+    detailRequestSeq = requestId
+    set({ isDetailLoading: true, selectedDetail: null, error: null })
     try {
       const { detail } = await skillMarketApi.detail(source, slug)
+      if (requestId !== detailRequestSeq) return
       set({ selectedDetail: detail, isDetailLoading: false })
     } catch (err) {
+      if (requestId !== detailRequestSeq) return
       set({
         isDetailLoading: false,
         error: getErrorMessage(err),
@@ -91,7 +104,10 @@ export const useSkillMarketStore = create<SkillMarketStore>((set, get) => ({
     }
   },
 
-  clearDetail: () => set({ selectedDetail: null }),
+  clearDetail: () => {
+    detailRequestSeq += 1
+    set({ selectedDetail: null, isDetailLoading: false })
+  },
 }))
 
 function getErrorMessage(err: unknown): string {

@@ -90,13 +90,19 @@ describe('skillMarketStore', () => {
   })
 
   it('updates source, sort, and query filters', () => {
+    useSkillMarketStore.setState({ selectedDetail: makeDetail() })
+
     useSkillMarketStore.getState().setSource('clawhub')
+    expect(useSkillMarketStore.getState().selectedDetail).toBeNull()
+
+    useSkillMarketStore.setState({ selectedDetail: makeDetail() })
     useSkillMarketStore.getState().setSort('updated')
     useSkillMarketStore.getState().setQuery('security')
 
     expect(useSkillMarketStore.getState().source).toBe('clawhub')
     expect(useSkillMarketStore.getState().sort).toBe('updated')
     expect(useSkillMarketStore.getState().query).toBe('security')
+    expect(useSkillMarketStore.getState().selectedDetail).toBeNull()
   })
 
   it('loads selected marketplace detail', async () => {
@@ -109,6 +115,31 @@ describe('skillMarketStore', () => {
     expect(useSkillMarketStore.getState().selectedDetail).toEqual(detail)
     expect(useSkillMarketStore.getState().isDetailLoading).toBe(false)
     expect(useSkillMarketStore.getState().error).toBeNull()
+  })
+
+  it('ignores stale marketplace detail responses', async () => {
+    let resolveFirst: ((value: { detail: SkillMarketDetail }) => void) | undefined
+    let resolveSecond: ((value: { detail: SkillMarketDetail }) => void) | undefined
+    const first = makeDetail({ slug: 'first-skill', displayName: 'First Skill' })
+    const second = makeDetail({
+      source: 'skillhub',
+      slug: 'second-skill',
+      displayName: 'Second Skill',
+    })
+    mockedSkillMarketApi.detail
+      .mockReturnValueOnce(new Promise((resolve) => { resolveFirst = resolve }))
+      .mockReturnValueOnce(new Promise((resolve) => { resolveSecond = resolve }))
+
+    const firstRequest = useSkillMarketStore.getState().fetchDetail('clawhub', 'first-skill')
+    const secondRequest = useSkillMarketStore.getState().fetchDetail('skillhub', 'second-skill')
+
+    resolveSecond?.({ detail: second })
+    await secondRequest
+    expect(useSkillMarketStore.getState().selectedDetail).toEqual(second)
+
+    resolveFirst?.({ detail: first })
+    await firstRequest
+    expect(useSkillMarketStore.getState().selectedDetail).toEqual(second)
   })
 
   it('installs selected detail and refreshes the list and detail', async () => {

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { skillMarketApi } from '../api/skillMarket'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSkillMarketStore } from '../stores/skillMarketStore'
+import { useSkillStore } from '../stores/skillStore'
 import type { SkillMarketDetail, SkillMarketItem } from '../types/skillMarket'
 import { SkillCenter } from './SkillCenter'
 
@@ -17,6 +18,16 @@ vi.mock('../api/skillMarket', () => ({
 
 vi.mock('../components/skills/SkillList', () => ({
   SkillList: () => <div data-testid="installed-skill-list">Installed skills</div>,
+}))
+
+vi.mock('../components/markdown/MarkdownRenderer', () => ({
+  MarkdownRenderer: ({ content }: { content: string }) => (
+    <div data-testid="markdown-renderer">{content}</div>
+  ),
+}))
+
+vi.mock('../components/chat/CodeViewer', () => ({
+  CodeViewer: ({ code }: { code: string }) => <div data-testid="code-viewer">{code}</div>,
 }))
 
 const mockedSkillMarketApi = vi.mocked(skillMarketApi)
@@ -66,6 +77,17 @@ describe('SkillCenter', () => {
       isInstalling: false,
       error: null,
     })
+    useSkillStore.setState({
+      skills: [],
+      selectedSkill: null,
+      selectedSkillReturnTab: 'skills',
+      isLoading: false,
+      isDetailLoading: false,
+      error: null,
+      fetchSkills: vi.fn(),
+      fetchSkillDetail: vi.fn(),
+      clearSelection: vi.fn(() => useSkillStore.setState({ selectedSkill: null })),
+    })
     mockedSkillMarketApi.list.mockResolvedValue({
       items: [makeItem()],
       nextCursor: null,
@@ -95,6 +117,14 @@ describe('SkillCenter', () => {
       isInstalling: false,
       error: null,
     })
+    useSkillStore.setState({
+      skills: [],
+      selectedSkill: null,
+      selectedSkillReturnTab: 'skills',
+      isLoading: false,
+      isDetailLoading: false,
+      error: null,
+    })
   })
 
   it('loads marketplace cards and opens a detail confirmation panel', async () => {
@@ -116,6 +146,16 @@ describe('SkillCenter', () => {
     expect(detail).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Install' })).toBeEnabled()
     expect(screen.getByText('Open upstream')).toHaveAttribute('href', 'https://github.com/example/ppt-generator')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Install' }))
+    expect(mockedSkillMarketApi.install).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Confirm skill install' })).toBeInTheDocument()
+    expect(screen.getByText('~/.claude/skills/ppt-generator')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Install skill' }))
+    await waitFor(() => {
+      expect(mockedSkillMarketApi.install).toHaveBeenCalledWith('clawhub', 'ppt-generator', '1.0.0')
+    })
   })
 
   it('submits market searches without auto-searching every keystroke', async () => {
@@ -165,5 +205,38 @@ describe('SkillCenter', () => {
 
     expect(screen.getByTestId('installed-skill-list')).toBeInTheDocument()
     expect(within(screen.getByTestId('skill-mine-tab')).getByText('Installed skills')).toBeInTheDocument()
+  })
+
+  it('opens the mine tab when an installed skill detail is already selected', async () => {
+    useSkillStore.setState({
+      selectedSkill: {
+        meta: {
+          name: 'local-ppt',
+          displayName: 'Local PPT',
+          description: 'Installed local skill',
+          source: 'user',
+          userInvocable: true,
+          contentLength: 80,
+          hasDirectory: true,
+        },
+        tree: [{ name: 'SKILL.md', path: 'SKILL.md', type: 'file' }],
+        files: [
+          {
+            path: 'SKILL.md',
+            content: '# Local PPT',
+            body: '# Local PPT',
+            language: 'markdown',
+            isEntry: true,
+          },
+        ],
+        skillRoot: '/tmp/local-ppt',
+      },
+    })
+
+    render(<SkillCenter />)
+
+    expect(await screen.findByText('Local PPT')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Mine' })).toHaveAttribute('aria-selected', 'true')
+    expect(mockedSkillMarketApi.list).not.toHaveBeenCalled()
   })
 })
